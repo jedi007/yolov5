@@ -87,7 +87,7 @@ def process_batch(detections, labels, iouv):
             matches = matches[matches[:, 2].argsort()[::-1]]  # 按iou从大到小排
             matches = matches[np.unique(matches[:, 1], return_index=True)[1]]
             # matches = matches[matches[:, 2].argsort()[::-1]]
-            matches = matches[np.unique(matches[:, 0], return_index=True)[1]] # 去重预测到同一个label上的结果，因为重复预测同一个TP不增加
+            matches = matches[np.unique(matches[:, 0], return_index=True)[1]] # 去重预测到同一个label上的结果，因为重复预测同一个label,TP不增加
         matches = torch.from_numpy(matches).to(iouv.device)
         correct[matches[:, 1].long()] = matches[:, 2:3] >= iouv
     return correct
@@ -412,7 +412,7 @@ def my_run(
                 tbox = xywh2xyxy(labels[:, 1:5])  # target boxes
                 scale_coords(im[si].shape[1:], tbox, shape, shapes[si][1])  # native-space labels
                 labelsn = torch.cat((labels[:, 0:1], tbox), 1)  # native-space labels
-                correct = process_batch(predn, labelsn, iouv)
+                correct = process_batch(predn, labelsn, iouv) #torch.Size([300, 10])
             stats.append((correct, pred[:, 4], pred[:, 5], labels[:, 0]))  # (correct, conf, pcls, tcls) tp, conf, pred_cls, target_cls
 
             # Save/log ...
@@ -456,14 +456,14 @@ def my_run(
 def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='dataset.yaml path')
-    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'yolov5s.pt', help='model.pt path(s)')
-    parser.add_argument('--batch-size', type=int, default=32, help='batch size')
+    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'yolov5n.pt', help='model.pt path(s)')
+    parser.add_argument('--batch-size', type=int, default=2, help='batch size')
     parser.add_argument('--imgsz', '--img', '--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.001, help='confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.6, help='NMS IoU threshold')
     parser.add_argument('--task', default='val', help='train, val, test, speed or study')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--workers', type=int, default=8, help='max dataloader workers (per RANK in DDP mode)')
+    parser.add_argument('--workers', type=int, default=0, help='max dataloader workers (per RANK in DDP mode)')
     parser.add_argument('--single-cls', action='store_true', help='treat as single-class dataset')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     parser.add_argument('--verbose', action='store_true', help='report mAP by class')
@@ -517,4 +517,33 @@ def main(opt):
 
 if __name__ == "__main__":
     opt = parse_opt()
-    main(opt)
+    # main(opt)
+
+
+    
+    pad = 0.5
+    imgsz=640
+    rect = False  # square inference for benchmarks
+
+
+    # Load model
+    from models.experimental import attempt_load  # scoped to avoid circular import
+    model = attempt_load(opt.weights, map_location=torch.device("cuda:0"))
+
+    val_dataloader = create_dataloader( 'D:\\GitHubProtects\\datasets\\coco128\\images\\train2017',
+                                    imgsz,
+                                    batch_size=2,
+                                    stride=32,
+                                    single_cls=False,
+                                    pad=pad,
+                                    rect=rect,
+                                    workers=0,
+                                    prefix='\x1b[34m\x1b[1mval: \x1b[0m')[0]
+
+
+    results, maps, _ = my_run(  number_classes=80,
+                                batch_size = 2,
+                                imgsz=imgsz,
+                                model=model,
+                                dataloader=val_dataloader,
+                                compute_loss=None)
