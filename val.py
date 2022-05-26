@@ -332,8 +332,6 @@ def run(
 @torch.no_grad()
 def my_run(
         number_classes: int,
-        batch_size=32,  # batch size
-        imgsz=640,  # inference size (pixels)
         conf_thres=0.001,  # confidence threshold
         iou_thres=0.6,  # NMS IoU threshold
         device='',  # cuda device, i.e. 0 or 0,1,2,3 or cpu
@@ -369,7 +367,7 @@ def my_run(
             targets = targets.to(device)
         im = im.float()  # if uint8 to fp32
         im /= 255  # 0 - 255 to 0.0 - 1.0
-        nb, _, height, width = im.shape  # batch size, channels, height, width
+        batch_size, _, height, width = im.shape  # batch size, channels, height, width
         t2 = time_sync()
         elapsed_time[0] += t2 - t1
 
@@ -383,7 +381,7 @@ def my_run(
 
         # NMS
         targets[:, 2:] *= torch.tensor((width, height, width, height), device=device)  # to pixels
-        lb = [targets[targets[:, 0] == i, 1:] for i in range(nb)] if save_hybrid else []  # for autolabelling
+        lb = [targets[targets[:, 0] == i, 1:] for i in range(batch_size)] if save_hybrid else []  # for autolabelling
         t3 = time_sync()
         out = non_max_suppression(out, conf_thres, iou_thres, labels=lb, multi_label=True, agnostic=(number_classes == 1))
         elapsed_time[2] += time_sync() - t3
@@ -442,7 +440,7 @@ def my_run(
 
     # Print speeds
     t = tuple(x / images_count * 1E3 for x in elapsed_time)  # speeds per image
-    shape = (batch_size, 3, imgsz, imgsz)
+    shape = (batch_size, 3, height, width)
     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {shape}' % t)
 
 
@@ -516,27 +514,21 @@ def main(opt):
 
 
 def my_test(opt):
-    pad = 0.5
-    imgsz=640
-    rect = False  # square inference for benchmarks
-
     # Load model
     from models.experimental import attempt_load  # scoped to avoid circular import
     model = attempt_load(opt.weights, map_location=torch.device("cuda:0"))
 
     val_dataloader = create_dataloader( 'D:\\GitHubProtects\\datasets\\coco128\\images\\train2017',
-                                    imgsz,
+                                    imgsz = 640,
                                     batch_size=2,
                                     stride=32,
                                     single_cls=False,
-                                    pad=pad,
-                                    rect=rect,
+                                    pad=0.5,
+                                    rect=False,
                                     workers=0,
                                     prefix='\x1b[34m\x1b[1mval: \x1b[0m')[0]
 
     results, maps, _ = my_run(  number_classes=80,
-                                batch_size = 2,
-                                imgsz=imgsz,
                                 model=model,
                                 dataloader=val_dataloader,
                                 compute_loss=None)

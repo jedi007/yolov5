@@ -398,13 +398,11 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
                                            compute_loss=compute_loss,
                                            half=False)
                 
-                results, maps, _ = val.my_run(int(data_dict['nc']),
-                            batch_size=batch_size // WORLD_SIZE * 2,
-                            imgsz=imgsz,
-                            model=ema.ema,
-                            dataloader=val_loader,
-                            save_dir=save_dir,
-                            compute_loss=compute_loss)
+                results, maps, _ = val.my_run(  int(data_dict['nc']),
+                                                model=ema.ema,
+                                                dataloader=val_loader,
+                                                save_dir=save_dir,
+                                                compute_loss=compute_loss)
 
             # Update best mAP
             fi = fitness(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.5, mAP@.5-.95]
