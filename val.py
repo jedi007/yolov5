@@ -515,16 +515,10 @@ def main(opt):
             plot_val_study(x=x)  # plot
 
 
-if __name__ == "__main__":
-    opt = parse_opt()
-    # main(opt)
-
-
-    
+def my_test(opt):
     pad = 0.5
     imgsz=640
     rect = False  # square inference for benchmarks
-
 
     # Load model
     from models.experimental import attempt_load  # scoped to avoid circular import
@@ -540,10 +534,15 @@ if __name__ == "__main__":
                                     workers=0,
                                     prefix='\x1b[34m\x1b[1mval: \x1b[0m')[0]
 
-
     results, maps, _ = my_run(  number_classes=80,
                                 batch_size = 2,
                                 imgsz=imgsz,
                                 model=model,
                                 dataloader=val_dataloader,
                                 compute_loss=None)
+
+if __name__ == "__main__":
+    opt = parse_opt()
+    # main(opt)
+
+    my_test(opt)
