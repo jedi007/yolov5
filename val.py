@@ -371,11 +371,11 @@ def my_run(
         im /= 255  # 0 - 255 to 0.0 - 1.0
         nb, _, height, width = im.shape  # batch size, channels, height, width
         t2 = time_sync()
-        elapsed_time[0] = (t2 - t1 + elapsed_time[0] * batch_i) / (batch_i + 1)
+        elapsed_time[0] += t2 - t1
 
         # Inference
         out, train_out = model(im) # inference, loss outputs
-        elapsed_time[1] += (time_sync() - t2 + elapsed_time[1] * batch_i) / (batch_i + 1)
+        elapsed_time[1] += time_sync() - t2
 
         # Loss
         if compute_loss:
@@ -386,7 +386,7 @@ def my_run(
         lb = [targets[targets[:, 0] == i, 1:] for i in range(nb)] if save_hybrid else []  # for autolabelling
         t3 = time_sync()
         out = non_max_suppression(out, conf_thres, iou_thres, labels=lb, multi_label=True, agnostic=(number_classes == 1))
-        elapsed_time[2] += (time_sync() - t3 + elapsed_time[2] * batch_i) / (batch_i + 1)
+        elapsed_time[2] += time_sync() - t3
 
         # Metrics
         for si, pred in enumerate(out):
