@@ -157,8 +157,8 @@ def random_perspective(im,
 
     # Center
     C = np.eye(3)
-    C[0, 2] = -im.shape[1] / 2  # x translation (pixels)
-    C[1, 2] = -im.shape[0] / 2  # y translation (pixels)
+    C[0, 2] = -im.shape[1] / 2 * ts  # x translation (pixels)
+    C[1, 2] = -im.shape[0] / 2 * ts  # y translation (pixels)
 
     # Translation
     T = np.eye(3)
