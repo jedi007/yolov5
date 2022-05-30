@@ -78,8 +78,9 @@ def process_batch(detections, labels, iouv):
     Returns:
         correct (Array[N, 10]), for 10 IoU levels
     """
+    #detections sizes:(300,6)  labels sizes:(8,5) iouv sizes: (10)
     correct = torch.zeros(detections.shape[0], iouv.shape[0], dtype=torch.bool, device=iouv.device) # size: (300, 10)
-    iou = box_iou(labels[:, 1:], detections[:, :4]) # size: (17, 300)  label size: (17,5)
+    iou = box_iou(labels[:, 1:], detections[:, :4]) 
     x = torch.where((iou >= iouv[0]) & (labels[:, 0:1] == detections[:, 5]))  # IoU above threshold and classes match.  返回不等于0的元素的索引 
     if x[0].shape[0]:
         matches = torch.cat((torch.stack(x, 1), iou[x[0], x[1]][:, None]), 1).cpu().numpy()  # [label, detection, iou]
@@ -389,13 +390,13 @@ def my_run(
         # Metrics
         for si, pred in enumerate(out):
             labels = targets[targets[:, 0] == si, 1:]
-            nl, npr = labels.shape[0], pred.shape[0]  # number of labels, predictions
+            number_labels, number_preds = labels.shape[0], pred.shape[0]  # number of labels, predictions
             path, shape = Path(paths[si]), shapes[si][0]
-            correct = torch.zeros(npr, niou, dtype=torch.bool, device=device)  # init
+            correct = torch.zeros(number_preds, niou, dtype=torch.bool, device=device)  # init
             images_count += 1
 
-            if npr == 0:
-                if nl:
+            if number_preds == 0:
+                if number_labels:
                     stats.append((correct, *torch.zeros((3, 0), device=device)))
                 continue
 
@@ -406,7 +407,7 @@ def my_run(
             scale_coords(im[si].shape[1:], predn[:, :4], shape, shapes[si][1])  # native-space pred
 
             # Evaluate
-            if nl:
+            if number_labels:
                 tbox = xywh2xyxy(labels[:, 1:5])  # target boxes
                 scale_coords(im[si].shape[1:], tbox, shape, shapes[si][1])  # native-space labels
                 labelsn = torch.cat((labels[:, 0:1], tbox), 1)  # native-space labels

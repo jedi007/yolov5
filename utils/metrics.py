@@ -266,8 +266,9 @@ def box_iou(box1, box2):
     """
 
     # inter(N,M) = (rb(N,M,2) - lt(N,M,2)).clamp(0).prod(2)
-    (a1, a2), (b1, b2) = box1[:, None].chunk(2, 2), box2.chunk(2, 1)
-    inter = (torch.min(a2, b2) - torch.max(a1, b1)).clamp(0).prod(2)
+    (a1, a2), (b1, b2) = box1[:, None].chunk(2, 2), box2.chunk(2, 1) #chunk: 把维度arg2上的数据分成arg1个一块
+    inter = (torch.min(a2, b2) - torch.max(a1, b1)).clamp(0).prod(2) # (a2, b2) sizes:(8,1,2) (300,2)  a2,b2分别广播扩充后再计算 ， 得到min：sizes: (8, 300 , 2)  
+    # 每个label都要计算与所有的preds的IOU，判断是否有预测正确的
 
     # IoU = inter / (area1 + area2 - inter)
     return inter / (box_area(box1.T)[:, None] + box_area(box2.T) - inter)
