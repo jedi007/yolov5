@@ -386,10 +386,11 @@ def my_run(
         elapsed_time[2] += time_sync() - t3
 
         # Metrics
-        for si, pred in enumerate(out):
-            labels = targets[targets[:, 0] == si, 1:]
+        for image_index, pred in enumerate(out):
+            #pred size: (300, 6)  x1,y1,x2,y2,conf,cls
+            labels = targets[targets[:, 0] == image_index, 1:]
             number_labels, number_preds = labels.shape[0], pred.shape[0]  # number of labels, predictions
-            path, shape = Path(paths[si]), shapes[si][0]
+            path, shape = Path(paths[image_index]), shapes[image_index][0]
             correct = torch.zeros(number_preds, niou, dtype=torch.bool, device=device)
             images_count += 1
 
@@ -402,12 +403,12 @@ def my_run(
             if number_classes == 1:
                 pred[:, 5] = 0
             predn = pred.clone()
-            scale_coords(im[si].shape[1:], predn[:, :4], shape, shapes[si][1])  # native-space pred
+            scale_coords(im[image_index].shape[1:], predn[:, :4], shape, shapes[image_index][1])  # native-space pred
 
             # Evaluate
             if number_labels:
                 tbox = xywh2xyxy(labels[:, 1:5])  # target boxes
-                scale_coords(im[si].shape[1:], tbox, shape, shapes[si][1])  # native-space labels
+                scale_coords(im[image_index].shape[1:], tbox, shape, shapes[image_index][1])  # native-space labels
                 labelsn = torch.cat((labels[:, 0:1], tbox), 1)  # native-space labels
                 process_batch(correct, predn, labelsn, iouv) #torch.Size([300, 10])
             stats.append((correct, pred[:, 4], pred[:, 5], labels[:, 0]))  # (correct, conf, pcls, tcls) tp, conf, pred_cls, target_cls
