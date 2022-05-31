@@ -69,7 +69,7 @@ def save_one_json(predn, jdict, path, class_map):
             'score': round(p[4], 5)})
 
 
-def process_batch(detections, labels, iouv):
+def process_batch(correct, detections, labels, iouv):
     """
     Return correct predictions matrix. Both sets of boxes are in (x1, y1, x2, y2) format.
     Arguments:
@@ -78,8 +78,8 @@ def process_batch(detections, labels, iouv):
     Returns:
         correct (Array[N, 10]), for 10 IoU levels
     """
-    #detections sizes:(300,6)  labels sizes:(8,5) iouv sizes: (10)
-    correct = torch.zeros(detections.shape[0], iouv.shape[0], dtype=torch.bool, device=iouv.device) # size: (300, 10)
+    # detections sizes:(300,6)  labels sizes:(8,5) iouv sizes: (10)
+    # correct = torch.zeros(detections.shape[0], iouv.shape[0], dtype=torch.bool, device=iouv.device) # size: (300, 10)
     iou = box_iou(labels[:, 1:], detections[:, :4]) 
     x = torch.where((iou >= iouv[0]) & (labels[:, 0:1] == detections[:, 5]))  # IoU above threshold and classes match.  返回不等于0的元素的索引 
     if x[0].shape[0]:
@@ -91,7 +91,6 @@ def process_batch(detections, labels, iouv):
             matches = matches[np.unique(matches[:, 0], return_index=True)[1]] # 去重预测到同一个label上的结果，因为重复预测同一个label,TP不增加
         matches = torch.from_numpy(matches).to(iouv.device)
         correct[matches[:, 1].long()] = matches[:, 2:3] >= iouv
-    return correct
 
 
 @torch.no_grad()
@@ -392,7 +391,7 @@ def my_run(
             labels = targets[targets[:, 0] == si, 1:]
             number_labels, number_preds = labels.shape[0], pred.shape[0]  # number of labels, predictions
             path, shape = Path(paths[si]), shapes[si][0]
-            correct = torch.zeros(number_preds, niou, dtype=torch.bool, device=device)  # init
+            correct = torch.zeros(number_preds, niou, dtype=torch.bool, device=device)
             images_count += 1
 
             if number_preds == 0:
@@ -411,8 +410,9 @@ def my_run(
                 tbox = xywh2xyxy(labels[:, 1:5])  # target boxes
                 scale_coords(im[si].shape[1:], tbox, shape, shapes[si][1])  # native-space labels
                 labelsn = torch.cat((labels[:, 0:1], tbox), 1)  # native-space labels
-                correct = process_batch(predn, labelsn, iouv) #torch.Size([300, 10])
+                process_batch(correct, predn, labelsn, iouv) #torch.Size([300, 10])
             stats.append((correct, pred[:, 4], pred[:, 5], labels[:, 0]))  # (correct, conf, pcls, tcls) tp, conf, pred_cls, target_cls
+
 
             # Save/log ...
 
