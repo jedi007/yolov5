@@ -71,12 +71,11 @@ def save_one_json(predn, jdict, path, class_map):
 
 def process_batch(correct, detections, labels, iouv):
     """
-    Return correct predictions matrix. Both sets of boxes are in (x1, y1, x2, y2) format.
+    Calculate the correct predictions matrix. Both sets of boxes are in (x1, y1, x2, y2) format.
     Arguments:
+        correct (Array[N, 10]), for 10 IoU levels
         detections (Array[N, 6]), x1, y1, x2, y2, conf, class
         labels (Array[M, 5]), class, x1, y1, x2, y2
-    Returns:
-        correct (Array[N, 10]), for 10 IoU levels
     """
     # detections sizes:(300,6)  labels sizes:(8,5) iouv sizes: (10)
     # correct = torch.zeros(detections.shape[0], iouv.shape[0], dtype=torch.bool, device=iouv.device) # size: (300, 10)
