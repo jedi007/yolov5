@@ -408,7 +408,7 @@ def my_run(
             # Evaluate
             if number_labels:
                 tbox = xywh2xyxy(labels[:, 1:5])  # target boxes
-                scale_coords(im[image_index].shape[1:], tbox, shape, shapes[image_index][1])  # native-space labels
+                scale_coords(im[image_index].shape[1:], tbox, shape, shapes[image_index][1])  # native-space labels    one shapes = (h0, w0), ((h / h0, w / w0), pad)  # for COCO mAP rescaling
                 labelsn = torch.cat((labels[:, 0:1], tbox), 1)  # native-space labels
                 process_batch(correct, predn, labelsn, iouv) #torch.Size([300, 10])
             stats.append((correct, pred[:, 4], pred[:, 5], labels[:, 0]))  # (correct, conf, pcls, tcls) tp, conf, pred_cls, target_cls
