@@ -37,7 +37,8 @@ def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir='.', names
     tp, conf, pred_cls = tp[i], conf[i], pred_cls[i]
 
     # Find unique classes
-    unique_classes, nt = np.unique(target_cls, return_counts=True)
+    unique_classes, nt = np.unique(target_cls, return_counts=True) 
+    #sizes: target_cls:(929,)  unique_classes:(71,) nt:(71,)  unique_classes: target_cls中出现过的类别 nt：unique_classes中每种类别的出现次数
     nc = unique_classes.shape[0]  # number of classes, number of detections
 
     # Create Precision-Recall curve and compute AP for each class
