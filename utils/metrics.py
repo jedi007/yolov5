@@ -53,7 +53,7 @@ def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir='.', names
             continue
         else:
             # Accumulate FPs and TPs
-            fpc = (1 - tp[i]).cumsum(0)
+            fpc = (1 - tp[i]).cumsum(0) #轴向累加和
             tpc = tp[i].cumsum(0)
 
             # Recall
@@ -80,7 +80,8 @@ def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir='.', names
         plot_mc_curve(px, p, Path(save_dir) / 'P_curve.png', names, ylabel='Precision')
         plot_mc_curve(px, r, Path(save_dir) / 'R_curve.png', names, ylabel='Recall')
 
-    i = f1.mean(0).argmax()  # max F1 index
+    
+    i = f1.mean(0).argmax()  # max F1 index  mean axis = 0：压缩行，对各列求均值，返回 1* n 矩阵
     p, r, f1 = p[:, i], r[:, i], f1[:, i]
     tp = (r * nt).round()  # true positives
     fp = (tp / (p + eps) - tp).round()  # false positives
