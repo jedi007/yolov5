@@ -673,3 +673,6 @@ def run(**kwargs):
 if __name__ == "__main__":
     opt = parse_opt()
     main(opt)
+
+
+# python train.py --batch-size 2 --weights yolov5n.pt  --cfg yolov5n.yaml --data coco128.yaml --epochs 2 --img 640 --hyp hyp.scratch-low.yaml --workers 0
