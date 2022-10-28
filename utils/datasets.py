@@ -717,11 +717,15 @@ class LoadImagesAndLabels(Dataset):
                                            labels4,
                                            segments4,
                                            degrees=self.hyp['degrees'],
-                                           translate=random.uniform(0, 0.17) + 0.33 + self.hyp['translate'],
+                                           translate=0.5 + self.hyp['translate'],
                                            scale=self.hyp['scale'],
                                            shear=self.hyp['shear'],
                                            perspective=self.hyp['perspective'],
                                            border=self.mosaic_border)  # border to remove
+
+        cv2.imshow("im4", img4)
+        cv2.waitKey(0)
+        exit(0)
 
         return img4, labels4
 

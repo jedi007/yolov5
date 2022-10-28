@@ -162,8 +162,8 @@ def random_perspective(im,
 
     # Translation
     T = np.eye(3)
-    T[0, 2] = random.uniform(0.5 - translate, 0.5 + translate) * width * ts  # x translation (pixels)
-    T[1, 2] = random.uniform(0.5 - translate, 0.5 + translate) * height * ts  # y translation (pixels)
+    T[0, 2] = width * ts * ((random.uniform(0.5 - translate, 0.25 / ts) if random.uniform(0, 1.0) > 0.5 else random.uniform(1 - 0.25 /  ts, 0.5 + translate))) # x translation (pixels)
+    T[1, 2] = height * ts * ((random.uniform(0.5 - translate, 0.25 / ts) if random.uniform(0, 1.0) > 0.5 else random.uniform(1 - 0.25 / ts, 0.5 + translate))) # y translation (pixels)
 
     # Combined rotation matrix
     M = T @ S @ R @ P @ C  # order of operations (right to left) is IMPORTANT
